@@ -16,7 +16,7 @@ package main
 
 import (
 	"fmt"
-	"github.com/onosproject/helm-client/cmd/generate-client/codegen"
+	"github.com/onosproject/helm-go/cmd/generate-client/codegen"
 	"github.com/spf13/cobra"
 	"gopkg.in/yaml.v2"
 	"io/ioutil"

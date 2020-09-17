@@ -6,8 +6,8 @@ import (
     {{- range $name, $group := .Groups }}
     {{ $group.Package.Alias }} {{ $group.Package.Path | quote }}
     {{- end }}
-    "github.com/onosproject/helm-client/pkg/kubernetes/config"
-    "github.com/onosproject/helm-client/pkg/kubernetes/resource"
+    "github.com/onosproject/helm-go/pkg/kubernetes/config"
+    "github.com/onosproject/helm-go/pkg/kubernetes/resource"
 	"k8s.io/client-go/rest"
 	"k8s.io/client-go/kubernetes"
 )

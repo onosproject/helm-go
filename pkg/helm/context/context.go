@@ -15,7 +15,7 @@
 package context
 
 import (
-	"github.com/onosproject/helm-client/pkg/helm/values"
+	"github.com/onosproject/helm-go/pkg/helm/values"
 )
 
 var context = &Context{}

@@ -3,7 +3,7 @@
 package v1
 
 import (
-	"github.com/onosproject/helm-client/pkg/kubernetes/resource"
+	"github.com/onosproject/helm-go/pkg/kubernetes/resource"
 	appsv1 "k8s.io/api/apps/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	kubernetes "k8s.io/client-go/kubernetes"

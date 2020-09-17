@@ -6,7 +6,7 @@ import (
     {{- range $name, $group := .Groups }}
     {{ $group.Package.Alias }} {{ $group.Package.Path | quote }}
     {{- end }}
-    "github.com/onosproject/helm-client/pkg/kubernetes/resource"
+    "github.com/onosproject/helm-go/pkg/kubernetes/resource"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	helmkube "helm.sh/helm/v3/pkg/kube"
 	"k8s.io/apimachinery/pkg/api/errors"

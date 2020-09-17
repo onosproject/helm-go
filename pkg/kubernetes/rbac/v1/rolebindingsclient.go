@@ -3,7 +3,7 @@
 package v1
 
 import (
-	"github.com/onosproject/helm-client/pkg/kubernetes/resource"
+	"github.com/onosproject/helm-go/pkg/kubernetes/resource"
 )
 
 type RoleBindingsClient interface {

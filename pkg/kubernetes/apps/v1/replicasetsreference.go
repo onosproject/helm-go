@@ -3,8 +3,8 @@
 package v1
 
 import (
-	corev1 "github.com/onosproject/helm-client/pkg/kubernetes/core/v1"
-	"github.com/onosproject/helm-client/pkg/kubernetes/resource"
+	corev1 "github.com/onosproject/helm-go/pkg/kubernetes/core/v1"
+	"github.com/onosproject/helm-go/pkg/kubernetes/resource"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 

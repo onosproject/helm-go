@@ -3,7 +3,7 @@
 package {{ .Reference.Package.Name }}
 
 import (
-    "github.com/onosproject/helm-client/pkg/kubernetes/resource"
+    "github.com/onosproject/helm-go/pkg/kubernetes/resource"
     {{- $resource := .Resource }}
     {{- range $ref := $resource.References }}
     {{- if not (eq $ref.Reference.Package.Path $resource.Package.Path) }}

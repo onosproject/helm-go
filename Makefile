@@ -8,12 +8,12 @@ build: test
 
 generate-client: # @HELP generate k8s client interfaces and implementations
 generate-client:
-	go run github.com/onosproject/helm-client/cmd/generate-client ./build/client/client.yaml ./pkg/kubernetes
+	go run github.com/onosproject/helm-go/cmd/generate-client ./build/client/client.yaml ./pkg/kubernetes
 
 test: # @HELP run the unit tests and source code validation
 test: linters license_check build deps
-	go test github.com/onosproject/helm-client/pkg/...
-	go test github.com/onosproject/helm-client/cmd/...
+	go test github.com/onosproject/helm-go/pkg/...
+	go test github.com/onosproject/helm-go/cmd/...
 
 coverage: # @HELP generate unit test coverage data
 coverage: build deps license_check

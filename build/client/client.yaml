@@ -1,4 +1,4 @@
-package: "github.com/onosproject/helm-client/pkg/kubernetes"
+package: "github.com/onosproject/helm-go/pkg/kubernetes"
 resources:
   - group: "apps"
     version: "v1"

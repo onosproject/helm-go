@@ -1,4 +1,4 @@
-module github.com/onosproject/helm-client
+module github.com/onosproject/helm-go
 
 go 1.14
 

@@ -15,10 +15,10 @@
 package helm
 
 import (
-	"github.com/onosproject/helm-client/pkg/helm/chart"
-	"github.com/onosproject/helm-client/pkg/helm/release"
-	"github.com/onosproject/helm-client/pkg/helm/repo"
-	"github.com/onosproject/helm-client/pkg/kubernetes/config"
+	"github.com/onosproject/helm-go/pkg/helm/chart"
+	"github.com/onosproject/helm-go/pkg/helm/release"
+	"github.com/onosproject/helm-go/pkg/helm/repo"
+	"github.com/onosproject/helm-go/pkg/kubernetes/config"
 )
 
 // DefaultNamespace is the default Helm namespace

@@ -3,7 +3,7 @@
 package v1beta1
 
 import (
-	"github.com/onosproject/helm-client/pkg/kubernetes/resource"
+	"github.com/onosproject/helm-go/pkg/kubernetes/resource"
 	apiextensionsv1beta1 "k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1beta1"
 	clientset "k8s.io/apiextensions-apiserver/pkg/client/clientset/clientset"
 	"k8s.io/apimachinery/pkg/api/errors"

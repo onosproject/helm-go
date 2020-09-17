@@ -17,7 +17,7 @@ package chart
 import (
 	"errors"
 	"fmt"
-	"github.com/onosproject/helm-client/pkg/helm/values"
+	"github.com/onosproject/helm-go/pkg/helm/values"
 	"helm.sh/helm/v3/pkg/action"
 	"helm.sh/helm/v3/pkg/chart"
 	"helm.sh/helm/v3/pkg/chart/loader"

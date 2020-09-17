@@ -17,10 +17,10 @@ package release
 import (
 	"bytes"
 	"errors"
-	"github.com/onosproject/helm-client/pkg/helm/context"
-	"github.com/onosproject/helm-client/pkg/helm/values"
-	"github.com/onosproject/helm-client/pkg/kubernetes"
-	"github.com/onosproject/helm-client/pkg/kubernetes/filter"
+	"github.com/onosproject/helm-go/pkg/helm/context"
+	"github.com/onosproject/helm-go/pkg/helm/values"
+	"github.com/onosproject/helm-go/pkg/kubernetes"
+	"github.com/onosproject/helm-go/pkg/kubernetes/filter"
 	"helm.sh/helm/v3/pkg/action"
 	"helm.sh/helm/v3/pkg/chart/loader"
 	"helm.sh/helm/v3/pkg/cli"
@@ -389,6 +389,9 @@ func (r *InstallRequest) Do() (*Release, error) {
 	ctx := context.GetContext().Release(r.name)
 	values := r.values.Normalize().Override(values.New(ctx.Values.Values()))
 	release, err := install.Run(chart, values.Values())
+	if err != nil {
+		return nil, err
+	}
 	return getRelease(r.config, release)
 }
 
@@ -575,6 +578,9 @@ func (r *UpgradeRequest) Do() (*Release, error) {
 	}
 
 	release, err := upgrade.Run(r.name, chart, values.Values())
+	if err != nil {
+		return nil, err
+	}
 	return getRelease(r.config, release)
 }
 
