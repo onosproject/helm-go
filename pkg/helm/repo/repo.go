@@ -114,10 +114,10 @@ func (r *AddRequest) Password(password string) *AddRequest {
 	return r
 }
 
-func (r *AddRequest) Do() error {
+func (r *AddRequest) Do() (*Repository, error) {
 	err := os.MkdirAll(filepath.Dir(r.repo.repoFile), os.ModePerm)
 	if err != nil && !os.IsExist(err) {
-		return err
+		return nil, err
 	}
 
 	// Acquire a file lock for process synchronization
@@ -129,21 +129,21 @@ func (r *AddRequest) Do() error {
 		defer fileLock.Unlock()
 	}
 	if err != nil {
-		return err
+		return nil, err
 	}
 
 	b, err := ioutil.ReadFile(r.repo.repoFile)
 	if err != nil && !os.IsNotExist(err) {
-		return err
+		return nil, err
 	}
 
 	var f repo.File
 	if err := yaml.Unmarshal(b, &f); err != nil {
-		return err
+		return nil, err
 	}
 
 	if f.Has(r.repo.Name) {
-		return fmt.Errorf("repository %q already exists", r.repo.Name)
+		return nil, fmt.Errorf("repository %q already exists", r.repo.Name)
 	}
 
 	e := repo.Entry{
@@ -158,19 +158,19 @@ func (r *AddRequest) Do() error {
 
 	cr, err := repo.NewChartRepository(&e, getter.All(settings))
 	if err != nil {
-		return err
+		return nil, err
 	}
 
 	if _, err := cr.DownloadIndexFile(); err != nil {
-		return err
+		return nil, err
 	}
 
 	f.Update(&e)
 
 	if err := f.WriteFile(r.repo.repoFile, 0644); err != nil {
-		return err
+		return nil, err
 	}
-	return nil
+	return r.repo, nil
 }
 
 // RemoveRequest is a Helm chart repository remove request
