@@ -126,7 +126,9 @@ func (r *AddRequest) Do() (*Repository, error) {
 	defer cancel()
 	locked, err := fileLock.TryLockContext(lockCtx, time.Second)
 	if err == nil && locked {
-		defer fileLock.Unlock()
+		defer func() {
+			_ = fileLock.Unlock()
+		}()
 	}
 	if err != nil {
 		return nil, err
