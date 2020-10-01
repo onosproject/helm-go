@@ -106,6 +106,35 @@ The release client is accessed by calling `Releases()` on the `Helm` client:
 releases := client.Releases()
 ```
 
+To get a list of releases call the `List` method:
+
+```go
+releases, err := client.Releases().List()
+```
+
+To get a specific release by name, use the `Get` method:
+
+```go
+release, err := client.Releases().Get("onos")
+```
+
+`Release` objects include a `Status` indicating the current status of the release:
+
+```go
+switch release.Status {
+case StatusPendingInstall:
+	...
+case StatusDeployed:
+	...
+case StatusUninstalled:
+    ...
+case StatusFailed:
+    ...
+default:
+	...
+}
+```
+
 To release a chart, execute an `Install` request:
 
 ```go

@@ -52,7 +52,9 @@ type repoClient struct{}
 func (c *repoClient) Add(name string) *AddRequest {
 	return &AddRequest{
 		repo: &Repository{
-			Name: name,
+			Name:      name,
+			repoFile:  settings.RepositoryConfig,
+			cacheFile: settings.RepositoryCache,
 		},
 	}
 }
