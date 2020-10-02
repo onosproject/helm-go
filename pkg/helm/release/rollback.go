@@ -14,16 +14,19 @@
 
 package release
 
-import "helm.sh/helm/v3/pkg/action"
+import (
+	"github.com/onosproject/helm-go/pkg/helm/config"
+	"helm.sh/helm/v3/pkg/action"
+)
 
 // RollbackRequest is a release rollback request
 type RollbackRequest struct {
 	client Client
-	config *action.Configuration
+	config *config.Config
 	name   string
 }
 
 func (r *RollbackRequest) Do() error {
-	rollback := action.NewRollback(r.config)
+	rollback := action.NewRollback(r.config.Configuration)
 	return rollback.Run(r.name)
 }

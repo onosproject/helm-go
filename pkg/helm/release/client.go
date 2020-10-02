@@ -16,20 +16,15 @@ package release
 
 import (
 	"errors"
+	"github.com/onosproject/helm-go/pkg/helm/config"
 	"github.com/onosproject/helm-go/pkg/helm/values"
-	"helm.sh/helm/v3/pkg/action"
 	"helm.sh/helm/v3/pkg/release"
 )
 
 // NewClient returns a new release client
-func NewClient(namespace string) Client {
-	config, err := conf.get(namespace)
-	if err != nil {
-		panic(err)
-	}
+func NewClient(config *config.Config) Client {
 	return &releaseClient{
-		namespace: namespace,
-		config:    config,
+		config: config,
 	}
 }
 
@@ -55,18 +50,17 @@ type Client interface {
 
 // releaseClient is the Helm release client
 type releaseClient struct {
-	namespace string
-	config    *action.Configuration
+	config *config.Config
 }
 
 func (c *releaseClient) Namespace() string {
-	return c.namespace
+	return c.config.Namespace()
 }
 
 // Get gets a release
 func (c *releaseClient) Get(name string) (*Release, error) {
 	list, err := c.config.Releases.List(func(r *release.Release) bool {
-		return r.Namespace == c.namespace && r.Name == name
+		return r.Namespace == c.config.Namespace() && r.Name == name
 	})
 	if err != nil {
 		return nil, err
@@ -81,7 +75,7 @@ func (c *releaseClient) Get(name string) (*Release, error) {
 // List lists releases
 func (c *releaseClient) List() ([]*Release, error) {
 	list, err := c.config.Releases.List(func(r *release.Release) bool {
-		return r.Namespace == c.namespace
+		return r.Namespace == c.config.Namespace()
 	})
 	if err != nil {
 		return nil, err

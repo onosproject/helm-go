@@ -24,7 +24,7 @@ To create a `Helm` client, simply call `helm.New()`:
 ```go
 import "github.com/onosproject/helm-go/pkg/helm"
 
-var client = helm.New()
+client, err := helm.New()
 ```
 
 By default, the client will be configured with the `default` namespace. You can optionally specify a different
@@ -33,7 +33,7 @@ namespace within which to operate:
 ```go
 import "github.com/onosproject/helm-go/pkg/helm"
 
-var client = helm.New("onos")
+client, err := helm.New("onos")
 ```
 
 The client exposes a series of sub-client interfaces which replicate the functionality of Helm CLI commands. Interfaces

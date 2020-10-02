@@ -15,7 +15,7 @@
 package release
 
 import (
-	"github.com/onosproject/helm-go/pkg/helm/context"
+	"github.com/onosproject/helm-go/pkg/helm/config"
 	"github.com/onosproject/helm-go/pkg/helm/values"
 	"helm.sh/helm/v3/pkg/action"
 	"helm.sh/helm/v3/pkg/chart/loader"
@@ -30,7 +30,7 @@ import (
 // UpgradeRequest is a release upgrade request
 type UpgradeRequest struct {
 	client       Client
-	config       *action.Configuration
+	config       *config.Config
 	name         string
 	chart        string
 	repo         string
@@ -114,7 +114,7 @@ func (r *UpgradeRequest) Timeout(timeout time.Duration) *UpgradeRequest {
 }
 
 func (r *UpgradeRequest) Do() (*Release, error) {
-	upgrade := action.NewUpgrade(r.config)
+	upgrade := action.NewUpgrade(r.config.Configuration)
 
 	// Setup the repo options
 	upgrade.RepoURL = r.repo
@@ -136,7 +136,7 @@ func (r *UpgradeRequest) Do() (*Release, error) {
 	upgrade.Timeout = r.timeout
 
 	// Locate the chart path
-	path, err := upgrade.ChartPathOptions.LocateChart(r.chart, settings)
+	path, err := upgrade.ChartPathOptions.LocateChart(r.chart, r.config.EnvSettings)
 	if err != nil {
 		return nil, err
 	}
@@ -147,16 +147,16 @@ func (r *UpgradeRequest) Do() (*Release, error) {
 		return nil, err
 	}
 
-	ctx := context.GetContext().Release(r.name)
+	ctx := config.GetContext().Release(r.name)
 	values := r.values.Normalize().Override(values.New(ctx.Values.Values()))
 
 	if upgrade.Install {
 		// If a release does not exist, install it. If another error occurs during
 		// the check, ignore the error and continue with the upgrade.
-		histClient := action.NewHistory(r.config)
+		histClient := action.NewHistory(r.config.Configuration)
 		histClient.Max = 1
 		if _, err := histClient.Run(r.name); err == driver.ErrReleaseNotFound {
-			install := action.NewInstall(r.config)
+			install := action.NewInstall(r.config.Configuration)
 			install.ChartPathOptions = upgrade.ChartPathOptions
 			install.DryRun = upgrade.DryRun
 			install.DisableHooks = upgrade.DisableHooks
@@ -179,8 +179,8 @@ func (r *UpgradeRequest) Do() (*Release, error) {
 							Keyring:          install.ChartPathOptions.Keyring,
 							SkipUpdate:       false,
 							Getters:          getter.All(cli.New()),
-							RepositoryConfig: settings.RepositoryConfig,
-							RepositoryCache:  settings.RepositoryCache,
+							RepositoryConfig: r.config.EnvSettings.RepositoryConfig,
+							RepositoryCache:  r.config.EnvSettings.RepositoryCache,
 						}
 						if err := man.Update(); err != nil {
 							return nil, err

@@ -12,22 +12,30 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package release
+package config
 
 import (
-	"github.com/onosproject/helm-go/pkg/helm/config"
 	"helm.sh/helm/v3/pkg/action"
+	"helm.sh/helm/v3/pkg/cli"
+	"log"
+	"os"
 )
 
-// UninstallRequest is a release uninstall request
-type UninstallRequest struct {
-	client Client
-	config *config.Config
-	name   string
+// GetConfig gets the configuration for the given namespace
+func GetConfig(namespace string) (*Config, error) {
+	settings := cli.New()
+	config := &action.Configuration{}
+	if err := config.Init(settings.RESTClientGetter(), namespace, os.Getenv("HELM_DRIVER"), log.Printf); err != nil {
+		return nil, err
+	}
+	return &Config{
+		Configuration: config,
+		EnvSettings:   settings,
+	}, nil
 }
 
-func (r *UninstallRequest) Do() error {
-	uninstall := action.NewUninstall(r.config.Configuration)
-	_, err := uninstall.Run(r.name)
-	return err
+// Config is the Helm client configuration
+type Config struct {
+	*action.Configuration
+	*cli.EnvSettings
 }

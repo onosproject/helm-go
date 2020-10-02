@@ -15,7 +15,7 @@
 package release
 
 import (
-	"github.com/onosproject/helm-go/pkg/helm/context"
+	"github.com/onosproject/helm-go/pkg/helm/config"
 	"github.com/onosproject/helm-go/pkg/helm/values"
 	"helm.sh/helm/v3/pkg/action"
 	"helm.sh/helm/v3/pkg/chart/loader"
@@ -29,7 +29,7 @@ import (
 // InstallRequest is a release install request
 type InstallRequest struct {
 	client                   Client
-	config                   *action.Configuration
+	config                   *config.Config
 	name                     string
 	chart                    string
 	repo                     string
@@ -137,7 +137,7 @@ func (r *InstallRequest) Timeout(timeout time.Duration) *InstallRequest {
 }
 
 func (r *InstallRequest) Do() (*Release, error) {
-	install := action.NewInstall(r.config)
+	install := action.NewInstall(r.config.Configuration)
 
 	// Setup the repo options
 	install.RepoURL = r.repo
@@ -164,7 +164,7 @@ func (r *InstallRequest) Do() (*Release, error) {
 	install.Timeout = r.timeout
 
 	// Locate the chart path
-	path, err := install.ChartPathOptions.LocateChart(r.chart, settings)
+	path, err := install.ChartPathOptions.LocateChart(r.chart, r.config.EnvSettings)
 	if err != nil {
 		return nil, err
 	}
@@ -187,8 +187,8 @@ func (r *InstallRequest) Do() (*Release, error) {
 					Keyring:          install.ChartPathOptions.Keyring,
 					SkipUpdate:       false,
 					Getters:          getter.All(cli.New()),
-					RepositoryConfig: settings.RepositoryConfig,
-					RepositoryCache:  settings.RepositoryCache,
+					RepositoryConfig: r.config.EnvSettings.RepositoryConfig,
+					RepositoryCache:  r.config.EnvSettings.RepositoryCache,
 				}
 				if err := man.Update(); err != nil {
 					return nil, err
@@ -199,7 +199,7 @@ func (r *InstallRequest) Do() (*Release, error) {
 		}
 	}
 
-	ctx := context.GetContext().Release(r.name)
+	ctx := config.GetContext().Release(r.name)
 	values := r.values.Normalize().Override(values.New(ctx.Values.Values()))
 	release, err := install.Run(chart, values.Values())
 	if err != nil {

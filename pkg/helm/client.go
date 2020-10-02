@@ -16,6 +16,7 @@ package helm
 
 import (
 	"github.com/onosproject/helm-go/pkg/helm/chart"
+	helmconfig "github.com/onosproject/helm-go/pkg/helm/config"
 	"github.com/onosproject/helm-go/pkg/helm/release"
 	"github.com/onosproject/helm-go/pkg/helm/repo"
 	"github.com/onosproject/helm-go/pkg/kubernetes/config"
@@ -25,17 +26,21 @@ import (
 var DefaultNamespace = config.GetNamespaceFromEnv()
 
 // New creates a new Helm client for the given namespace
-func New(namespace ...string) Helm {
+func New(namespace ...string) (Helm, error) {
 	ns := DefaultNamespace
 	if len(namespace) > 0 {
 		ns = namespace[0]
 	}
+	config, err := helmconfig.GetConfig(ns)
+	if err != nil {
+		return nil, err
+	}
 	return &helmClient{
 		namespace: ns,
-		repos:     repo.NewClient(),
-		charts:    chart.NewClient(),
-		releases:  release.NewClient(ns),
-	}
+		repos:     repo.NewClient(config),
+		charts:    chart.NewClient(config),
+		releases:  release.NewClient(config),
+	}, nil
 }
 
 // Helm is a Helm client

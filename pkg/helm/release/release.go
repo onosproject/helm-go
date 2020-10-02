@@ -16,19 +16,13 @@ package release
 
 import (
 	"bytes"
+	"github.com/onosproject/helm-go/pkg/helm/config"
 	"github.com/onosproject/helm-go/pkg/helm/values"
 	"github.com/onosproject/helm-go/pkg/kubernetes"
 	"github.com/onosproject/helm-go/pkg/kubernetes/filter"
-	"helm.sh/helm/v3/pkg/action"
-	"helm.sh/helm/v3/pkg/cli"
 	"helm.sh/helm/v3/pkg/release"
-	"log"
-	"os"
-	"sync"
 	"time"
 )
-
-var settings = cli.New()
 
 type Status string
 
@@ -79,30 +73,7 @@ func (r *Release) Client() kubernetes.Client {
 	return r.client
 }
 
-var conf = &configs{
-	configs: make(map[string]*action.Configuration),
-}
-
-type configs struct {
-	configs map[string]*action.Configuration
-	mu      sync.Mutex
-}
-
-func (c *configs) get(namespace string) (*action.Configuration, error) {
-	c.mu.Lock()
-	defer c.mu.Unlock()
-	config, ok := c.configs[namespace]
-	if !ok {
-		config = &action.Configuration{}
-		if err := config.Init(settings.RESTClientGetter(), namespace, os.Getenv("HELM_DRIVER"), log.Printf); err != nil {
-			return nil, err
-		}
-		c.configs[namespace] = config
-	}
-	return config, nil
-}
-
-func getRelease(config *action.Configuration, release *release.Release) (*Release, error) {
+func getRelease(config *config.Config, release *release.Release) (*Release, error) {
 	resources, err := config.KubeClient.Build(bytes.NewBufferString(release.Manifest), true)
 	if err != nil {
 		return nil, err

@@ -20,7 +20,10 @@ import (
 )
 
 func TestLocalInstall(t *testing.T) {
-	client := New("default")
+	client, err := New("default")
+	assert.NoError(t, err)
+	assert.NotNil(t, client)
+
 	release, err := client.Releases().
 		Install("atomix-controller", "../atomix-helm-charts/atomix-controller").
 		Set("scope", "Namespace").
@@ -36,7 +39,9 @@ func TestLocalInstall(t *testing.T) {
 }
 
 func TestRemoteInstall(t *testing.T) {
-	client := New("default")
+	client, err := New("default")
+	assert.NoError(t, err)
+	assert.NotNil(t, client)
 	release, err := client.Releases().
 		Install("atomix-controller", "atomix-controller").
 		Repo("https://charts.atomix.io").
@@ -53,7 +58,9 @@ func TestRemoteInstall(t *testing.T) {
 }
 
 func TestRemoteInstallFromRepo(t *testing.T) {
-	client := New("default")
+	client, err := New("default")
+	assert.NoError(t, err)
+	assert.NotNil(t, client)
 	repo, err := client.Repos().
 		Add("atomix-test").
 		URL("https://charts.atomix.io").

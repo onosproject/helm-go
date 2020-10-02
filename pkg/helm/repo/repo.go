@@ -18,8 +18,8 @@ import (
 	"context"
 	"fmt"
 	"github.com/gofrs/flock"
+	"github.com/onosproject/helm-go/pkg/helm/config"
 	"gopkg.in/yaml.v2"
-	"helm.sh/helm/v3/pkg/cli"
 	"helm.sh/helm/v3/pkg/getter"
 	"helm.sh/helm/v3/pkg/helmpath"
 	"helm.sh/helm/v3/pkg/repo"
@@ -30,11 +30,11 @@ import (
 	"time"
 )
 
-var settings = cli.New()
-
 // NewClient creates a new Helm repository client
-func NewClient() Client {
-	return &repoClient{}
+func NewClient(config *config.Config) Client {
+	return &repoClient{
+		config: config,
+	}
 }
 
 // Client is a Helm repository client
@@ -46,15 +46,16 @@ type Client interface {
 }
 
 // repoClient is the Helm repository client
-type repoClient struct{}
+type repoClient struct {
+	config *config.Config
+}
 
 // Add adds a repository
 func (c *repoClient) Add(name string) *AddRequest {
 	return &AddRequest{
 		repo: &Repository{
-			Name:      name,
-			repoFile:  settings.RepositoryConfig,
-			cacheFile: settings.RepositoryCache,
+			Name:   name,
+			config: c.config,
 		},
 	}
 }
@@ -63,18 +64,16 @@ func (c *repoClient) Add(name string) *AddRequest {
 func (c *repoClient) Remove(name string) *RemoveRequest {
 	return &RemoveRequest{
 		repo: &Repository{
-			Name:      name,
-			repoFile:  settings.RepositoryConfig,
-			cacheFile: settings.RepositoryCache,
+			Name:   name,
+			config: c.config,
 		},
 	}
 }
 
 // Repository is a Helm chart repository
 type Repository struct {
-	Name      string
-	repoFile  string
-	cacheFile string
+	Name   string
+	config *config.Config
 }
 
 // AddRequest is a Helm chart repository add request
@@ -119,13 +118,13 @@ func (r *AddRequest) Password(password string) *AddRequest {
 }
 
 func (r *AddRequest) Do() (*Repository, error) {
-	err := os.MkdirAll(filepath.Dir(r.repo.repoFile), os.ModePerm)
+	err := os.MkdirAll(filepath.Dir(r.repo.config.RepositoryConfig), os.ModePerm)
 	if err != nil && !os.IsExist(err) {
 		return nil, err
 	}
 
 	// Acquire a file lock for process synchronization
-	fileLock := flock.New(strings.Replace(r.repo.repoFile, filepath.Ext(r.repo.repoFile), ".lock", 1))
+	fileLock := flock.New(strings.Replace(r.repo.config.RepositoryConfig, filepath.Ext(r.repo.config.RepositoryConfig), ".lock", 1))
 	lockCtx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
 	defer cancel()
 	locked, err := fileLock.TryLockContext(lockCtx, time.Second)
@@ -138,7 +137,7 @@ func (r *AddRequest) Do() (*Repository, error) {
 		return nil, err
 	}
 
-	b, err := ioutil.ReadFile(r.repo.repoFile)
+	b, err := ioutil.ReadFile(r.repo.config.RepositoryConfig)
 	if err != nil && !os.IsNotExist(err) {
 		return nil, err
 	}
@@ -162,7 +161,7 @@ func (r *AddRequest) Do() (*Repository, error) {
 		CAFile:   r.caFile,
 	}
 
-	cr, err := repo.NewChartRepository(&e, getter.All(settings))
+	cr, err := repo.NewChartRepository(&e, getter.All(r.repo.config.EnvSettings))
 	if err != nil {
 		return nil, err
 	}
@@ -173,7 +172,7 @@ func (r *AddRequest) Do() (*Repository, error) {
 
 	f.Update(&e)
 
-	if err := f.WriteFile(r.repo.repoFile, 0644); err != nil {
+	if err := f.WriteFile(r.repo.config.RepositoryConfig, 0644); err != nil {
 		return nil, err
 	}
 	return r.repo, nil
@@ -185,7 +184,7 @@ type RemoveRequest struct {
 }
 
 func (r *RemoveRequest) Do() error {
-	cr, err := repo.LoadFile(r.repo.repoFile)
+	cr, err := repo.LoadFile(r.repo.config.RepositoryConfig)
 	if err != nil {
 		return err
 	}
@@ -193,16 +192,16 @@ func (r *RemoveRequest) Do() error {
 	if !cr.Remove(r.repo.Name) {
 		return fmt.Errorf("no repo named %q found", r.repo.Name)
 	}
-	if err := cr.WriteFile(r.repo.repoFile, 0644); err != nil {
+	if err := cr.WriteFile(r.repo.config.RepositoryConfig, 0644); err != nil {
 		return err
 	}
 
-	idx := filepath.Join(r.repo.cacheFile, helmpath.CacheChartsFile(r.repo.Name))
+	idx := filepath.Join(r.repo.config.RepositoryCache, helmpath.CacheChartsFile(r.repo.Name))
 	if _, err := os.Stat(idx); err == nil {
 		os.Remove(idx)
 	}
 
-	idx = filepath.Join(r.repo.cacheFile, helmpath.CacheIndexFile(r.repo.Name))
+	idx = filepath.Join(r.repo.config.RepositoryCache, helmpath.CacheIndexFile(r.repo.Name))
 	if _, err := os.Stat(idx); os.IsNotExist(err) {
 		return nil
 	} else if err != nil {

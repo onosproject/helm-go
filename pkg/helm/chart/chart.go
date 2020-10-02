@@ -17,6 +17,7 @@ package chart
 import (
 	"errors"
 	"fmt"
+	"github.com/onosproject/helm-go/pkg/helm/config"
 	"github.com/onosproject/helm-go/pkg/helm/values"
 	"helm.sh/helm/v3/pkg/action"
 	"helm.sh/helm/v3/pkg/chart"
@@ -30,13 +31,13 @@ import (
 	"sigs.k8s.io/yaml"
 )
 
-var settings = cli.New()
-
 const chartsDir = "charts"
 
 // NewClient creates a new Helm chart client
-func NewClient() Client {
-	return &chartClient{}
+func NewClient(config *config.Config) Client {
+	return &chartClient{
+		config: config,
+	}
 }
 
 // Client is a Helm chart client
@@ -46,12 +47,14 @@ type Client interface {
 }
 
 // chartClient is a Helm chart client
-type chartClient struct{}
+type chartClient struct {
+	config *config.Config
+}
 
 // Get gets a chart
 func (c *chartClient) Get(name string) (*Chart, error) {
 	opts := action.ChartPathOptions{}
-	path, err := opts.LocateChart(name, settings)
+	path, err := opts.LocateChart(name, c.config.EnvSettings)
 	if err != nil {
 		return nil, err
 	}
@@ -60,12 +63,12 @@ func (c *chartClient) Get(name string) (*Chart, error) {
 	if err != nil {
 		return nil, err
 	}
-	return newChart(chart)
+	return newChart(chart, c.config)
 }
 
 var _ Client = &chartClient{}
 
-func newChart(chart *chart.Chart) (*Chart, error) {
+func newChart(chart *chart.Chart, config *config.Config) (*Chart, error) {
 	vals := values.New()
 	for _, f := range chart.Raw {
 		if f.Name == chartutil.ValuesfileName {
@@ -79,6 +82,7 @@ func newChart(chart *chart.Chart) (*Chart, error) {
 
 	return &Chart{
 		chart:  chart,
+		config: config,
 		Name:   chart.Name(),
 		values: vals.Immutable(),
 	}, nil
@@ -87,6 +91,7 @@ func newChart(chart *chart.Chart) (*Chart, error) {
 // Chart is a Helm chart
 type Chart struct {
 	chart  *chart.Chart
+	config *config.Config
 	Name   string
 	values *values.ImmutableValues
 }
@@ -124,8 +129,8 @@ func (c *Chart) SubChart(name string) (*Chart, error) {
 			ChartPath:        c.chart.ChartPath(),
 			SkipUpdate:       false,
 			Getters:          getter.All(cli.New()),
-			RepositoryConfig: settings.RepositoryConfig,
-			RepositoryCache:  settings.RepositoryCache,
+			RepositoryConfig: c.config.EnvSettings.RepositoryConfig,
+			RepositoryCache:  c.config.EnvSettings.RepositoryCache,
 		}
 		if err := man.Update(); err != nil {
 			return nil, err
@@ -137,7 +142,7 @@ func (c *Chart) SubChart(name string) (*Chart, error) {
 	if err != nil {
 		return nil, err
 	}
-	return newChart(subChart)
+	return newChart(subChart, c.config)
 }
 
 // SubCharts returns the chart's sub-charts
@@ -156,8 +161,8 @@ func (c *Chart) SubCharts() ([]*Chart, error) {
 			ChartPath:        c.chart.ChartPath(),
 			SkipUpdate:       false,
 			Getters:          getter.All(cli.New()),
-			RepositoryConfig: settings.RepositoryConfig,
-			RepositoryCache:  settings.RepositoryCache,
+			RepositoryConfig: c.config.EnvSettings.RepositoryConfig,
+			RepositoryCache:  c.config.EnvSettings.RepositoryCache,
 		}
 		if err := man.Update(); err != nil {
 			return nil, err
@@ -171,7 +176,7 @@ func (c *Chart) SubCharts() ([]*Chart, error) {
 		if err != nil {
 			return nil, err
 		}
-		chart, err := newChart(subChart)
+		chart, err := newChart(subChart, c.config)
 		if err != nil {
 			return nil, err
 		}
