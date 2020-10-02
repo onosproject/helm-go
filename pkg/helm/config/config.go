@@ -23,6 +23,12 @@ import (
 
 // GetConfig gets the configuration for the given namespace
 func GetConfig(namespace string) (*Config, error) {
+	if os.Getenv("HELM_NAMESPACE") == "" {
+		err := os.Setenv("HELM_NAMESPACE", namespace)
+		if err != nil {
+			return nil, err
+		}
+	}
 	settings := cli.New()
 	config := &action.Configuration{}
 	if err := config.Init(settings.RESTClientGetter(), namespace, os.Getenv("HELM_DRIVER"), log.Printf); err != nil {
