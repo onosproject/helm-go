@@ -63,7 +63,9 @@ func (c *repoClient) Add(name string) *AddRequest {
 func (c *repoClient) Remove(name string) *RemoveRequest {
 	return &RemoveRequest{
 		repo: &Repository{
-			Name: name,
+			Name:      name,
+			repoFile:  settings.RepositoryConfig,
+			cacheFile: settings.RepositoryCache,
 		},
 	}
 }

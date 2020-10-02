@@ -23,6 +23,7 @@ import (
 	"helm.sh/helm/v3/pkg/cli"
 	"helm.sh/helm/v3/pkg/release"
 	"log"
+	"os"
 	"sync"
 	"time"
 )
@@ -93,7 +94,7 @@ func (c *configs) get(namespace string) (*action.Configuration, error) {
 	config, ok := c.configs[namespace]
 	if !ok {
 		config = &action.Configuration{}
-		if err := config.Init(settings.RESTClientGetter(), namespace, "memory", log.Printf); err != nil {
+		if err := config.Init(settings.RESTClientGetter(), namespace, os.Getenv("HELM_DRIVER"), log.Printf); err != nil {
 			return nil, err
 		}
 		c.configs[namespace] = config

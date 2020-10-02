@@ -27,6 +27,11 @@ func SetContext(ctx *Context) {
 
 // GetContext gets the Helm context
 func GetContext() *Context {
+	if context == nil {
+		context = &Context{
+			Values: map[string]*values.ImmutableValues{},
+		}
+	}
 	return context
 }
 
@@ -45,8 +50,12 @@ type Context struct {
 
 // Release returns the context for the given release
 func (c *Context) Release(name string) *ReleaseContext {
+	v, ok := c.Values[name]
+	if !ok {
+		v = values.New().Immutable()
+	}
 	return &ReleaseContext{
-		Values: c.Values[name],
+		Values: v,
 	}
 }
 
